@@ -1,0 +1,140 @@
+{% extends "layout.htm" %}
+{% block style %}
+<style>
+  .table-sm th, .table-sm td {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.9rem;
+  }
+  .card {
+    border-radius: 10px;
+  }
+  .overview-card {
+    min-height: 120px;
+  }
+  .data-table {
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  .dashboard-img {
+    max-height: 300px;
+    object-fit: contain;
+  }
+</style>
+{% endblock style %}
+
+{% block content %}
+<div class="container-fluid  px-4" style="margin-top: 90px;">
+  {% if error %}
+    <div class="alert alert-warning text-center mt-4">{{ error }}</div>
+  {% else %}
+    <!-- Title -->
+    <div class="text-center mb-4 ">
+      <h3 class="text-primary fw-bold">{{ title }}</h3>
+      <p class="text-muted">Quick summary of your dataset’s structure and quality</p>
+    </div>
+
+<!-- Row 1: Summary cards -->
+<div class="row g-4 mb-4 text-center">
+<div class="col-md-3">
+    <div class="card overview-card shadow-sm border-0 p-3 h-100">
+      <h6 class="text-muted">File Name</h6>
+      <h4 class="fw-bold">{{ filename }}</h4>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card overview-card shadow-sm border-0 p-3 h-100">
+      <h6 class="text-muted">Rows</h6>
+      <h4 class="fw-bold">{{ shape_rows }}</h4>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card overview-card shadow-sm border-0 p-3 h-100">
+      <h6 class="text-muted">Columns</h6>
+      <h4 class="fw-bold">{{ shape_cols }}</h4>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card overview-card shadow-sm border-0 p-3 h-100">
+      <h6 class="text-muted">Duplicates</h6>
+      <h4 class="fw-bold text-danger">{{ num_duplicates }}</h4>
+    </div>
+  </div>
+</div>
+
+<!-- Row 2: Missing Data Visualization -->
+<div class="row justify-content-center align-items-stretch mb-5">
+  <div class="col-md-6">
+    <div class="card shadow-sm border-0 text-center p-4 h-100">
+      <h6 class="text-primary fw-bold mb-3">Missing Data Visualization</h6>
+      <img src="{{ url_for('static', filename='missingno_plot.png') }}" 
+           alt="Missing Data Matrix" 
+           class="img-fluid rounded dashboard-img mx-auto d-block">
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body">
+        <div class="data-table table-responsive">
+          <table class="table table-sm table-striped align-middle">
+            <thead class="table-light">
+              <tr><th>Column</th><th>Missing</th></tr>
+            </thead>
+            <tbody>
+              {% for col, count in missing_counts.items() %}
+              <tr><td>{{ col }}</td><td>{{ count }}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    <!-- Row 3: Unique counts + Top frequent values -->
+    <div class="row g-4 mb-5">
+      <div class="col-md-6">
+        <div class="card shadow-sm border-0 h-100">
+          <div class="card-body">
+            <h6 class="text-primary mb-3">Unique Values</h6>
+            <div class="data-table table-responsive">
+              <table class="table table-sm table-hover align-middle">
+                <thead class="table-light">
+                  <tr><th>Column</th><th>Unique</th></tr>
+                </thead>
+                <tbody>
+                  {% for col, count in unique_counts.items() %}
+                  <tr><td>{{ col }}</td><td>{{ count }}</td></tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="card shadow-sm border-0 h-100">
+          <div class="card-body">
+            <h6 class="text-primary mb-3">Top Frequent Values</h6>
+            <div class="data-table">
+              {% for col, values in top_values.items() %}
+              <h6 class="fw-bold mt-2 text-secondary">{{ col }}</h6>
+              <ul class="list-group list-group-flush mb-2">
+                {% for val, freq in values.items() %}
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>{{ val }}</span>
+                  <span class="badge bg-primary rounded-pill">{{ freq }}</span>
+                </li>
+                {% endfor %}
+              </ul>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

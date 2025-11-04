@@ -1,0 +1,175 @@
+
+{%extends "layout.htm" %}
+{% block style %}
+  <style>
+    body {
+      background-color: #f8f9fa;
+      min-height: 100vh;
+      margin: 0;
+      overflow-x: hidden;
+    }
+    header {
+      background: #ffffff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      z-index: 1000;
+      position: fixed;
+      width: 100%;
+      top: 0;
+    }
+    main {
+      margin-top: 80px;
+    }
+    .sidebar {
+      position: fixed;
+      top: 80px; /* height of header */
+      left: 0;
+      width: 350px;
+      height: calc(100vh - 80px);
+      overflow-y: auto;
+      background-color: #ffffff;
+      border-right: 1px solid #e9ecef;
+      padding: 20px;
+      box-shadow: 2px 0 6px rgba(0,0,0,0.05);
+    }
+    .sidebar h5 {
+      color: #0d6efd;
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+    .content-area {
+      margin-left: 360px; /* matches sidebar width + padding */
+      padding: 30px;
+    }
+    .card {
+      border: none;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      border-radius: 10px;
+    }
+    footer {
+      background: #fff;
+      border-top: 1px solid #e9ecef;
+      padding: 20px 0;
+      text-align: center;
+      margin-left: 280px;
+    }
+  </style>
+{% endblock style %}
+{% block content %}
+  <main style="min-height: 100vh;">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <h5>{{title}}</h5>
+
+      <!-- Upload Form -->
+      <form method="POST" enctype="multipart/form-data" class="mb-4">
+        <div class="mb-3">
+          <label for="file" class="form-label fw-bold">Upload Excel file</label>
+          <input type="file" class="form-control" id="file" name="file" required>
+        </div>
+        <button name="upload" class="btn btn-primary w-100" type="submit">Upload</button>
+      </form>
+
+      {% if columns %}
+      <!-- Processing Form -->
+      <form action="{{ url_for('search') }}" method="post">
+        <div class="mb-3">
+          <label for="columnSelect" class="form-label fw-bold">Select Column</label>
+          <select class="form-select " id="columnSelect"  name="column">
+            <option selected disabled>Choose a column...</option>
+            {% for col in columns %}
+            <option value="{{ col }}" {% if session.get('selected_column') == col %}selected{% endif %}>{{ col }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="mb-3">
+          <label for="column_name" class="form-label fw-bold">Column Name</label>
+          <input type="text" class="form-control" id="column_name" value="{{ session.get('new_column', '') }}" name="column_name" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="keywords" class="form-label fw-bold">Keywords</label>
+          <textarea id="keywords" name="keywords" class="form-control" rows="2">{{ session.get('keywords', '') | join(', ') }}</textarea>
+          <div class="form-text text-muted">Separate keywords with commas.</div>
+        </div>
+        <div class="mb-3">
+          <label for="no_match_value" class="form-label fw-bold">No Match Value</label>
+          <input type="text" class="form-control" value="{{ session.get('no_result', '') }}" id="no_match_value" name="no_match_value">
+        </div>
+        <div class="mb-3">
+          <label for="regex" class="form-label fw-bold">Regex Option</label>
+          <select class="form-select" id="regex" name="regex">
+            <option value="search" {% if session.get('regex_option') == 'search' %}selected{% endif %}>search</option>
+            <option value="findall" {% if session.get('regex_option') == 'findall' %}selected{% endif %}>findall</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label for="case_sensitive" class="form-label fw-bold">Case Sensitive</label>
+          <select class="form-select" id="case_sensitive" name="case_sensitive">
+            <option value="false" {% if session.get('case_sensitive') == False %}selected{% endif %} >false</option>
+            <option value="true" {% if session.get('case_sensitive') == True %}selected{% endif %}>true</option>
+          </select>
+        </div>
+        <button type="submit" name="stats" class="btn btn-success w-100">Process</button>
+      </form>
+      {% endif %}
+    </aside>
+
+    <!-- Main Content -->
+    <section class="content-area">
+      <div class="hero text-center mb-4">
+        <h2>Upload & Process Your Data</h2>
+      </div>
+      {% if shape_cols and shape_rows %}
+      <div class="card shadow-sm my-3 p-3">
+        <div class="row align-items-center">
+          <!-- Left: Data info -->
+          <div class="col-md-6 text-center text-md-start">
+            <h5 class="card-title text-primary mb-3">DataFrame Info</h5>
+            <p class="mb-1"><strong>File name:</strong> {{ filename }}</p>
+            <p class="mb-0"><strong>Rows:</strong> {{ shape_rows }}</p>
+            <p class="mb-0"><strong>Columns:</strong> {{ shape_cols }}</p>
+          </div>
+
+          <!-- Right: Button -->
+            <div class="col-md-6 text-center text-md-end">
+              <div class="d-flex flex-column align-items-center align-items-md-end gap-2">
+
+                {% if new_table %}
+                <form action="{{ url_for('data_overview') }}" method="post" class="w-auto">
+                  <button type="submit" name="overview" class="btn btn-primary shadow-sm" style="width: 140px;">
+                    Data Overview
+                  </button>
+                </form>
+                <form action="{{ url_for('download') }}" method="post" class="w-auto">
+                  <button type="submit" name="download" class="btn btn-success shadow-sm" style="width: 140px;">
+                    Download Excel
+                  </button>
+                </form>
+                {% endif %}
+              </div>
+            </div>
+        </div>
+      </div>
+      {% endif %}
+
+      {% if tables %}
+        <div class="card p-3 mb-4">
+          <h5 class="mb-3">Uploaded File Preview</h5>
+            <div class="table-responsive">
+              {{ tables | safe }}
+            </div>
+        </div>
+      {% endif %}
+
+      {% if new_table %}
+        <div class="card p-3 mb-3">
+          <h5 class="mb-3">Processed Data</h5>
+          <div  class="table-responsive">
+          {{ new_table | safe }}
+          </div>
+        </div>
+      {% endif %}
+    </section>
+  </main>
+{% endblock %}
+

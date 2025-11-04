@@ -1,0 +1,183 @@
+
+{%extends "layout.htm" %}
+{% block style %}
+  <style>
+    body {
+      background-color: #f8f9fa;
+      min-height: 100vh;
+      margin: 0;
+      overflow-x: hidden;
+    }
+    header {
+      background: #ffffff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      z-index: 1000;
+      position: fixed;
+      width: 100%;
+      top: 0;
+    }
+    main {
+      margin-top: 80px;
+    }
+    .sidebar {
+      position: fixed;
+      top: 80px; /* height of header */
+      left: 0;
+      width: 350px;
+      height: calc(100vh - 80px);
+      overflow-y: auto;
+      background-color: #ffffff;
+      border-right: 1px solid #e9ecef;
+      padding: 20px;
+      box-shadow: 2px 0 6px rgba(0,0,0,0.05);
+    }
+    .sidebar h5 {
+      color: #0d6efd;
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+    .content-area {
+      margin-left: 360px; /* matches sidebar width + padding */
+      padding: 30px;
+    }
+    .card {
+      border: none;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      border-radius: 10px;
+    }
+    footer {
+      background: #fff;
+      border-top: 1px solid #e9ecef;
+      padding: 20px 0;
+      text-align: center;
+      margin-left: 280px;
+    }
+  </style>
+{% endblock style %}
+{% block content %}
+  <main style="min-height: 100vh;">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <h5>{{title}}</h5>
+
+      <!-- Upload Form -->
+      <form method="POST" enctype="multipart/form-data" class="mb-4">
+        <div class="mb-3">
+          <label for="file" class="form-label fw-bold">Upload Excel file</label>
+          <input type="file" class="form-control" id="file" name="file" required>
+        </div>
+        <button name="upload" class="btn btn-primary w-100" type="submit">Upload</button>
+      </form>
+
+      {% if columns %}
+      <!-- Processing Form -->
+      <form action="{{ url_for('article_frequency_analyzer') }}" method="POST">
+        <div class="mb-3">
+          <label for="columnSelect" class="form-label fw-bold">Select Column</label>
+          <select class="form-select" id="columnSelect" name="column">
+            <option selected disabled>Choose a column...</option>
+            {% for col in columns %}
+            <option value="{{ col }}" {% if session.get('selected_column') == col %}selected{% endif %} >{{ col }}</option>
+            {% endfor %}
+          </select>
+        </div>
+    <!-- Frequency Select -->
+    <div class="">
+      <label for="freq" class="form-label fw-semibold">Frequency</label>
+      <select id="freq" name="freq" class="form-select shadow-sm">
+        <option value="D" {% if session.get('freq') == 'D' %}selected{% endif %}>Per Day</option>
+        <option value="M" {% if session.get('freq') == 'M' %}selected{% endif %}>Per Month</option>
+        <option value="Y" {% if session.get('freq') == 'Y' %}selected{% endif %}>Per Year</option>
+      </select>
+        <div class="form-text text-muted">
+          Default: Per Month
+        </div>
+    </div>
+
+    <!-- Start Date -->
+    <div class="">
+      <label for="start_date" class="form-label fw-semibold">Start Date</label>
+      <input type="date" id="start_date" name="start_date" class="form-control shadow-sm">
+        <div class="form-text text-muted">
+          Default: earliest date in your dataset
+        </div>
+    </div>
+
+    <!-- End Date -->
+    <div class=" mb-4">
+      <label for="end_date" class="form-label fw-semibold">End Date</label>
+      <input type="date" id="end_date" name="end_date" class="form-control shadow-sm">
+        <div class="form-text text-muted">
+          Default: latest date in your dataset
+        </div>
+    </div>
+        <button type="submit" name="process" class="btn btn-success w-100">Process</button>
+      </form>
+      {% endif %}
+    </aside>
+
+    <!-- Main Content -->
+    <section class="content-area">
+      <div class="hero text-center mb-4">
+        <h2>Upload & Process Your Data</h2>
+      </div>
+      {% if (shape_cols and shape_rows) or download_btn %}
+      <div class="card shadow-sm my-3 p-3">
+        <div class="row align-items-center">
+          <!-- Left: Data info -->
+          <div class="col-md-6 text-center text-md-start">
+            <h5 class="card-title text-primary mb-3">DataFrame Info</h5>
+            <p class="mb-1"><strong>File name:</strong> {{ filename }}</p>
+            {% if shape_cols and shape_rows %}
+            <p class="mb-0"><strong>Rows:</strong> {{ shape_rows }}</p>
+            <p class="mb-0"><strong>Columns:</strong> {{ shape_cols }}</p>
+            {% endif %}
+            {% if latest_date and earliest_date %}
+            <p class="mb-0"><strong>Latest Date:</strong> {{ earliest_date }}</p>
+            <p class="mb-0"><strong>Earliest Date:</strong> {{ latest_date }}</p>
+            {%endif%}
+          </div>
+
+          <!-- Right: Button -->
+            <div class="col-md-6 text-center text-md-end">
+              <div class="d-flex flex-column align-items-center align-items-md-end gap-2">
+                {% if new_table %}
+                <form action="{{ url_for('download') }}" method="post" class="w-auto">
+                  <button type="submit" name="download" class="btn btn-success shadow-sm" style="width: 140px;">
+                    Download Excel
+                  </button>
+                </form>
+                {% endif %}
+              </div>
+            </div>
+        </div>
+      </div>
+      {% endif %}
+
+      {% if table %}
+        <div class="card p-3 mb-4">
+          <h5 class="mb-3">Uploaded File Preview</h5>
+            <div class="table-responsive">
+              {{ table | safe }}
+            </div>
+        </div>
+      {% endif %}
+
+      {% if new_table %}
+        <div class="card p-3 mb-3">
+          <h5 class="mb-3">Processed Data</h5>
+          <div  class="table-responsive">
+          {{ new_table | safe }}
+          </div>
+        </div>
+
+          <div class="card p-3 mb-3 shadow-sm border-0 text-center  h-100">
+            <img src="{{plot_path}}" 
+                alt="Article Frequency Analyzer" 
+                class="img-fluid rounded dashboard-img mx-auto d-block">
+          </div>
+      {% endif %}
+    </section>
+  </main>
+{% endblock %}
+

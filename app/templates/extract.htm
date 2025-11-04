@@ -1,0 +1,148 @@
+
+{%extends "layout.htm" %}
+{% block style %}
+  <style>
+    body {
+      background-color: #f8f9fa;
+      min-height: 100vh;
+      margin: 0;
+      overflow-x: hidden;
+    }
+    header {
+      background: #ffffff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      z-index: 1000;
+      position: fixed;
+      width: 100%;
+      top: 0;
+    }
+    main {
+      margin-top: 80px;
+    }
+    .sidebar {
+      position: fixed;
+      top: 80px; /* height of header */
+      left: 0;
+      width: 350px;
+      height: calc(100vh - 80px);
+      overflow-y: auto;
+      background-color: #ffffff;
+      border-right: 1px solid #e9ecef;
+      padding: 20px;
+      box-shadow: 2px 0 6px rgba(0,0,0,0.05);
+    }
+    .sidebar h5 {
+      color: #0d6efd;
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+    .content-area {
+      margin-left: 360px; /* matches sidebar width + padding */
+      padding: 30px;
+    }
+    .card {
+      border: none;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      border-radius: 10px;
+    }
+    footer {
+      background: #fff;
+      border-top: 1px solid #e9ecef;
+      padding: 20px 0;
+      text-align: center;
+      margin-left: 280px;
+    }
+  </style>
+{% endblock style %}
+{% block content %}
+  <main style="min-height: 100vh;">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <h5>EXTRACT</h5>
+
+      <!-- Upload Form -->
+      <form method="POST" enctype="multipart/form-data" class="mb-4">
+        <div class="mb-3">
+          <label for="file" class="form-label">Upload Excel file</label>
+          <input type="file" class="form-control" id="file" name="file" required>
+        </div>
+        <button name="upload" class="btn btn-primary w-100" type="submit">Upload</button>
+      </form>
+
+      <!-- Processing Form -->
+       {% if columns %}
+      <form action="{{ url_for('extract') }}" method="POST">
+        <!-- Select multiple columns -->
+        <div class="mb-3">
+          <label for="columnsSelect" class="form-label">Select Columns</label>
+          <select class="form-select" id="columnsSelect" name="columns" multiple required>
+            {% for col in columns %}
+            <option value="{{ col }}">{{ col }}</option>
+            {% endfor %}
+          </select>
+          <div class="form-text">Hold Ctrl (Windows) or Cmd (Mac) to select multiple columns.</div>
+        </div>
+
+        <!-- Keywords input -->
+        <div class="mb-3">
+          <label for="keywordsInput" class="form-label">Keywords</label>
+          <input type="text" class="form-control" id="keywordsInput" name="keywords" placeholder="Enter keywords separated by comma" required>
+        </div>
+
+        <button type="submit" name="process" class="btn btn-success w-100">Process</button>
+      </form>
+       {%endif%}
+
+    </aside>
+
+    <!-- Main Content -->
+    <section class="content-area">
+      <div class="hero text-center mb-4">
+        <h2>Upload & Process Your Data</h2>
+        <p class="text-muted">Add a new column by matching keywords</p>
+      </div>
+      {% if shape_cols and shape_rows %}
+      <div class="card shadow-sm my-3 p-3">
+        <div class="row align-items-center">
+          <!-- Left: Data info -->
+          <div class="col-md-6 text-center text-md-start">
+            <h5 class="card-title text-primary mb-3">DataFrame Info</h5>
+            <p class="mb-1"><strong>Rows:</strong> {{ shape_rows }}</p>
+            <p class="mb-0"><strong>Columns:</strong> {{ shape_cols }}</p>
+          </div>
+
+          <!-- Right: Button -->
+          <div class="col-md-6 text-center text-md-end">
+            {% if new_table %}
+            <form action="{{ url_for('download') }}" method="post" class="d-inline">
+              <button type="submit" name="download" class="btn btn-primary shadow-sm">
+                Download Excel
+              </button>
+            </form>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      {% if table %}
+        <div class="card p-3 mb-4">
+          <h5 class="mb-3">Uploaded File Preview</h5>
+            <div class="table-responsive">
+              {{ table | safe }}
+            </div>
+        </div>
+      {% endif %}
+
+      {% if new_table %}
+        <div class="card p-3 mb-3">
+          <h5 class="mb-3">Processed Data</h5>
+          <div  class="table-responsive">
+          {{ new_table | safe }}
+          </div>
+        </div>
+      {% endif %}
+    </section>
+  </main>
+{% endblock %}
+

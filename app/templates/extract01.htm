@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- Bootstrap JS (with Popper) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <title>Document</title>
+</head>
+<body>
+    <h2>Upload a CSV/Excel File</h2>
+<form method="POST" enctype="multipart/form-data">
+    <input type="file" name="file">
+    <button name="upload" type="submit">Upload</button>
+</form>
+
+{% if columns %}
+<form method="POST">
+    <select name="column">
+        {% for col in columns %}
+        <option value="{{ col }}">{{ col }}</option>
+        {% endfor %}
+    </select> <br>
+    <label for="column_name">Column Name:</label><br>
+    <input type="text" id="column_name" name="column_name"><br><br>
+
+    <label for="keywords">Keywords:</label><br>
+    <input type="text" id="keywords" name="keywords"><br><br>
+
+    <label for="regex">Regex:</label><br>
+    <select id="regex" name="regex">
+        <option value="search">search</option>
+        <option value="findall">findall</option>
+    </select><br><br>
+
+    <label for="no_match_value">No Match Value:</label><br>
+    <input type="text" id="no_match_value" name="no_match_value"><br><br>
+
+    <label for="case_sensitive">Case Sensitive:</label><br>
+    <select id="case_sensitive" name="case_sensitive">
+        <option value="true">true</option>
+        <option value="false">false</option>
+    </select><br><br>
+
+
+    <button name="stats" type="submit">Statistic</button>
+</form>
+{% endif %}
+
+{% if tables %}
+<h3>Preview:</h3>
+{{ tables | safe }}
+{% endif %}
+
+{% if new_table %}
+<h3>Statistics:</h3>
+{{ new_table | safe }}
+
+<form action="{{ url_for('download') }}" method="post">
+    <input type="submit" name="download" value="Download Excel">
+</form>
+{% endif %}
+
+</body>
+</html>

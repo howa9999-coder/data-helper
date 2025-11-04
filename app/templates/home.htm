@@ -1,0 +1,106 @@
+
+{%extends "layout.htm" %}
+{% block style %}
+ <style>
+    body {
+      background-color: #f8f9fa;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: #ffffff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .hero {
+      text-align: center;
+      padding: 60px 0 20px;
+    }
+    .card {
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+      transition: transform 0.2s ease-in-out;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+    }
+    .card-1 { background: linear-gradient(135deg, #007bff, #00b4d8); }
+    .card-2 { background: linear-gradient(135deg, #28a745, #8fd19e); }
+    .card-3 { background: linear-gradient(135deg, #fd7e14, #f9c74f); }
+    .card-4 { background: linear-gradient(135deg, #4ed36d, #3adfc4); }
+    .card-title {
+      font-weight: 600;
+    }
+    footer {
+      margin-top: auto;
+      background: #fff;
+      text-align: center;
+      padding: 15px;
+      border-top: 1px solid #e9ecef;
+    }
+  </style>
+{%endblock style%}
+{% block content %}
+  <main class="container mt-5">
+    <section class="hero">
+      <h2 class="fw-bold">Choose a Process</h2>
+      <p class="text-muted">Select one of the tools below to start processing your data.</p>
+    </section>
+
+    <section class="row g-4 pb-5">
+      <!-- Search / Find All Keywords -->
+      <div class="col-md-3">
+        <div class="card  h-100 text-center p-4">
+          <div class="card-body">
+            <h5 class="card-title text-primary">Keyword Finder</h5>
+            <p class="card-text text-muted">
+              Search for specific keywords in your DataFrame column. Choose between returning the first match (search) or all matches (findall). Helps quickly identify the presence of keywords in your data.            </p>
+            <a href="{{url_for('search')}}" class="btn btn-outline-primary btn-sm mt-2">Start</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Remove Duplicated Rows -->
+      <div class="col-md-3">
+        <div class="card  h-100 text-center p-4">
+          <div class="card-body">
+            <h5 class="card-title text-primary">Duplicate Cleaner</h5>
+            <p class="card-text text-muted">
+              Clean your DataFrame by automatically removing duplicate rows. Ensures your dataset is unique and consistent, saving time for further analysis.
+            </p>
+            <a href="{{url_for('duplicate')}}" class="btn btn-outline-primary btn-sm mt-2">Start</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dual Keywords -->
+      <div class="col-md-3">
+        <div class="card  h-100 text-center p-4">
+          <div class="card-body">
+            <h5 class="card-title text-primary">Co-Occurrence Detector</h5>
+            <p class="card-text text-muted">
+              Identify rows where two keywords appear together in a column. Useful for co-occurrence analysis and exploring relationships between terms in your text data.
+            </p>
+            <a href="{{url_for('dual_keywords')}}" class="btn btn-outline-primary btn-sm mt-2">Start</a>
+          </div>
+        </div>
+      </div>
+            <!-- Article Frequency Analyzer -->
+      <div class="col-md-3">
+        <div class="card  h-100 text-center p-4">
+          <div class="card-body">
+            <h5 class="card-title text-primary">Publication Trend Analyzer</h5>
+            <p class="card-text text-muted">
+              A simple tool that tracks how many articles were published over time — by day, month, or year.
+            </p>
+            <a href="{{url_for('article_frequency_analyzer')}}" class="btn btn-outline-primary btn-sm mt-2">Start</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+{%endblock %}
+
+
